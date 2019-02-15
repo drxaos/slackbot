@@ -32,7 +32,7 @@ public class SlackApi {
         session = SlackSessionFactory.getSlackSessionBuilder(token)
                 .withAutoreconnectOnDisconnection(true)
                 .withConnectionHeartbeat(5, TimeUnit.SECONDS)
-                .withProxy(Proxy.Type.HTTP, "127.0.0.1", 8080)
+                .withProxy(Proxy.Type.HTTP, "195.54.14.65", 8080)
                 .build();
 
         try {

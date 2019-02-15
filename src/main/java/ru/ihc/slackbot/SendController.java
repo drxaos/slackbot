@@ -24,39 +24,13 @@ public class SendController {
     private SlackApi slackApi;
 
     @ResponseBody
-    @RequestMapping(value = "/send/{channel}", method = RequestMethod.POST)
-    public String postSend(@RequestParam(required = true) String key,
-                           @PathVariable String channel,
-                           @RequestBody String msg) {
-        JsonMessage obj = new Gson().fromJson(msg, JsonMessage.class);
-        return slackApi.sendJson(key, channel, obj);
-    }
-
-    @ResponseBody
     @RequestMapping(value = "/send/{channel}", method = RequestMethod.GET)
-    public String simpleSend(@RequestParam(name = "key", required = true) String key,
+    public String simpleSend(@RequestParam(name = "key", required = false) String key,
                              @PathVariable String channel,
                              @RequestParam(required = false, defaultValue = "info") String username,
                              @RequestParam(required = false) String icon,
-                             @RequestParam("text") String text) {
+                             @RequestParam(name = "text", required = false, defaultValue = "test") String text) {
         return slackApi.send(key, channel, username, icon, text);
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/send/{channel}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public String urlencodedSend(@RequestParam(name = "key", required = true) String key,
-                                 @PathVariable String channel,
-                                 HttpServletRequest request) throws UnsupportedEncodingException {
-
-        // восстанавливаем после кривого перекодирования
-        String json = null;
-        for (Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
-            String s = URLDecoder.decode(e.nextElement(), "UTF-8").trim();
-            if (s.startsWith("{") && s.endsWith("}")) {
-                json = s;
-            }
-        }
-
-        return postSend(key, channel, json);
-    }
 }
