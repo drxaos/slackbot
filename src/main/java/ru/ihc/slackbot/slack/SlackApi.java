@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.ihc.slackbot.CommandService;
 import ru.ihc.slackbot.config.Config;
 
 import javax.annotation.PostConstruct;
@@ -15,15 +14,10 @@ import java.net.Proxy;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 public class SlackApi {
     private static final Logger log = LoggerFactory.getLogger(SlackApi.class);
-
-    @Autowired
-    private CommandService commandService;
 
     @Autowired
     private Config config;
@@ -47,39 +41,6 @@ public class SlackApi {
             log.error("connect error with token " + token, e);
             throw new RuntimeException(e);
         }
-
-        session.addMessagePostedListener((event, session1) -> {
-            final String selfId = session1.sessionPersona().getId();
-
-            if (selfId.equals(event.getSender().getId())) {
-                // avoid self messages
-                return;
-            }
-
-            String text = event.getMessageContent();
-            if (!text.contains("<@" + selfId + ">")) {
-                // no mention
-                return;
-            }
-
-            text = text.replace("<@" + selfId + ">", "").trim();
-
-            session1.sendTyping(event.getChannel());
-
-            try {
-                String answer = commandService.handleCommand(text);
-
-                session1.sendMessage(event.getChannel(),
-                        "# " + text + "\n" +
-                                Stream.of(answer.split("\n"))
-                                        .map(elem -> "> " + elem + "\n")
-                                        .collect(Collectors.joining()));
-
-            } catch (Throwable e) {
-                session1.sendMessage(event.getChannel(), "" + e);
-            }
-
-        });
 
         send(config.getKey(), "bots", null, null, "Bot started");
 
@@ -114,15 +75,8 @@ public class SlackApi {
             map.put("ihc", "https://my.ihc.ru/images/avatar/ihc.jpg");
             map.put("ihc.ru", "https://my.ihc.ru/images/avatar/ihc.jpg");
             map.put("my.ihc.ru", "https://my.ihc.ru/images/avatar/ihc.jpg");
-            map.put("ихц", "https://my.ihc.ru/images/avatar/ihc.jpg");
-            map.put("интернет хостинг центр", "https://my.ihc.ru/images/avatar/ihc.jpg");
-            map.put("relevate", "https://bill.relevate.ru/images/avatar/rlv.jpg");
-            map.put("relevate.ru", "https://bill.relevate.ru/images/avatar/rlv.jpg");
-            map.put("bill.relevate.ru", "https://bill.relevate.ru/images/avatar/rlv.jpg");
-            map.put("релевейт", "https://bill.relevate.ru/images/avatar/rlv.jpg");
             map.put("devel", "https://my.ihc.ru/images/avatar/devel.png");
             map.put("devel-x64.ihc-ru.net", "https://my.ihc.ru/images/avatar/devel.png");
-            map.put("девел", "https://my.ihc.ru/images/avatar/devel.png");
 
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 if (content.getUsername().toLowerCase().startsWith(entry.getKey())) {
